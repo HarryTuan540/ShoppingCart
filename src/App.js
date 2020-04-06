@@ -2,6 +2,8 @@ import React from "react";
 import ShoppingCart from "./components/ShoppingCart";
 import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -9,13 +11,45 @@ const theme = createMuiTheme({
     }
   }
 });
+const initState = {
+  cart: [],
+  another: "hello"
+};
+const rootReducer = (state = initState, action) => {
+  if (action.type === "ADD_TO_CART") {
+    const available_product_index = state.cart.findIndex(product_in_cart => {
+      return product_in_cart.id_product === action.payload.id_product;
+    });
+    if (available_product_index >= 0) {
+      const new_cart = [...state.cart];
+      new_cart[available_product_index].quantity =
+        new_cart[available_product_index].quantity + 1;
+      return {
+        ...state,
+        cart: new_cart
+      };
+    } else {
+      return {
+        ...state,
+        cart: [...state.cart, action.payload]
+      };
+    }
+  }
+  return state;
+};
+const store = createStore(
+  rootReducer,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <div className="App">
-        <ShoppingCart />
-      </div>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <div className="App">
+          <ShoppingCart />
+        </div>
+      </ThemeProvider>
+    </Provider>
   );
 }
 

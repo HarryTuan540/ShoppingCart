@@ -5,6 +5,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import { withRouter } from "react-router-dom";
+import axios from "axios";
 import {
   Typography,
   TextField,
@@ -14,6 +15,7 @@ import {
   Container
 } from "@material-ui/core";
 import { withStyles } from "@material-ui/core";
+import { connect } from "react-redux";
 const styles = theme => ({
   img_container: {
     boxShadow: theme.shadows[3]
@@ -37,19 +39,50 @@ class ProductDetail extends Component {
   //     quantity
   //   }
   state = {
-    size: "S"
+    selected_size: " ",
+    quantity: 0
   };
   handleChange = event => {
-    this.setState({ size: event.target.value });
+    this.setState({ selected_size: event.target.value });
   };
+  // componentDidMount() {
+  //   const { products, match } = this.props;
+  //   const id = match.params.masanpham;
+  //   const product = products.find(product => {
+  //     return product.id === Number(id);
+  //   });
+  //   console.log(product);
+  // }
   componentDidMount() {
-    const { products, match } = this.props;
-    const id = match.params.masanpham;
-    const product = products.find(product => {
-      return product.id === Number(id);
-    });
-    console.log(product);
+    axios
+      .get(
+        "https://kmin-academy-shopping-cart-api.herokuapp.com/products/${this.props.match.params.masanpham}"
+      )
+      .then(res => {
+        const { id, name, price, size, src } = res.data;
+        this.setState({
+          id,
+          name,
+          price,
+          size,
+          img: src
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      });
   }
+  handleClickBtn = () => {
+    const { id, name, price, selected_size, img } = this.state;
+    this.props.addToCart({
+      id_cart: "cart_" + Date.now() + Math.random(),
+      id_product: id,
+      name,
+      price,
+      img,
+      size: selected_size
+    });
+  };
   render() {
     const { classes } = this.props;
     return (
@@ -82,8 +115,14 @@ class ProductDetail extends Component {
               </RadioGroup>
             </FormControl>
             <Box>
-              <TextField type="number"></TextField>
-              <Button>Add to cart</Button>
+              <TextField
+                type="number"
+                value={this.state.quantity}
+                onChange={event => {
+                  this.setState({ quantity: event.target.value });
+                }}
+              ></TextField>
+              <Button onClick={this.handleClickBtn}>Add to cart</Button>
             </Box>
           </Grid>
         </Grid>
@@ -92,4 +131,14 @@ class ProductDetail extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(ProductDetail));
+const mapDispatchToProps = dispatch => {
+  return {
+    addToCart: product => {
+      dispatch({ type: "ADD_TO_CART", payload: product });
+    }
+  };
+};
+export default connect(
+  null,
+  mapDispatchToProps
+)(withRouter(withStyles(styles)(ProductDetail)));

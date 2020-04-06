@@ -7,6 +7,7 @@ import { ShoppingCart } from "@material-ui/icons";
 import { Box, Button, Badge } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
 const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: theme.palette.primary.main
@@ -19,8 +20,7 @@ const useStyles = makeStyles(theme => ({
     // }
   }
 }));
-
-export default function Header(props) {
+function Header(props) {
   const classes = useStyles(props);
   return (
     <AppBar position="static" className="nav" className={classes.root}>
@@ -40,11 +40,22 @@ export default function Header(props) {
           </Button>
         </Box>
         <IconButton edge="start" color="inherit" aria-label="menu">
-          <Badge badgeContent={5} color="secondary">
-            <ShoppingCart />
-          </Badge>
+          <Link to="/cart">
+            <Badge badgeContent={props.quantity} color="secondary">
+              <ShoppingCart />
+            </Badge>
+          </Link>
         </IconButton>
       </Toolbar>
     </AppBar>
   );
 }
+const mapStateToProps = state => {
+  const quantity = state.cart.reduce((count, product_in_cart) => {
+    return (count = count + product_in_cart.quantity);
+  }, 0);
+  return {
+    quantity: quantity
+  };
+};
+export default connect(mapStateToProps)(Header);

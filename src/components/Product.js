@@ -1,9 +1,22 @@
 import React from "react";
+// import styles from "./Product.module.css";
 import { Grid, Box, Typography, Button } from "@material-ui/core";
 import { Link } from "react-router-dom";
 export default function Product(props) {
-  const { id, name, price, img } = props;
+  const handleAddToCart = () => {
+    const { name, price, img } = props;
 
+    props.addToCart({
+      id_cart: "cart_" + Date.now() + Math.random(),
+      id_product: id,
+      name,
+      price,
+      quantity: 1,
+      img
+    });
+    console.log("ADD");
+  };
+  const { id, name, price, img } = props;
   return (
     <Grid item md={3}>
       <Box boxShadow={5}></Box>
@@ -28,7 +41,12 @@ export default function Product(props) {
           <Typography color="secondary" variant="h4">
             {price}$
           </Typography>
-          <Button variant="contained" color="primary">
+          <Button
+            variant="contained"
+            // className={styles.button}
+            color="primary"
+            onClick={handleAddToCart}
+          >
             Add to cart
           </Button>
         </Box>
